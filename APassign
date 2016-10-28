@@ -1,0 +1,64 @@
+import os,json#import thr JSON library to read the words from dict
+import sys
+chains=dict()#this dict keeps the lists of the words
+list=[]#this is our word ladder which keeps track of our word ladder
+
+src_word=raw_input('enter the source word')
+dest_word=raw_input('enter the dest word')
+
+src_word=src_word.upper()#since words in JSON are all capitalized we change the case to uppercase
+dest_word=dest_word.upper()
+
+jdata=open('C:\Users\Acer-pc\Desktop\dictionary.json')
+jsondata=json.load(jdata)#changing the json file into a python dict
+
+def hammingdistance(word1,word2):#gets the hamming distance
+    difference = 0
+    for i  in range(0,word1.__len__()):#loop to compare each word between src and dest word
+       if word1[i] != word2[i]:
+           difference += 1
+
+    return difference
+
+def list_maker(src_word):#this function creates the ladders....IT WORKS ON BreadthFirstSearch
+        print src_word
+        list.append(src_word)#adding the src_words to the list
+        if dest_word.__len__()==src_word.__len__():
+
+            if hammingdistance(dest_word,src_word) == 1:#if distance is one it means our chain is complete hence exit.
+                return
+            if hammingdistance(dest_word,src_word)>1:#if we still dont get the dest
+                for k in jsondata.iterkeys():
+                 k=str(k)
+                 if src_word.__len__() == k.__len__():
+                    if hammingdistance(src_word,k) == 1:
+                        if src_word in chains:
+                            # append the new number to the existing array at this slot
+                            chains[src_word].append(k)
+                        else:
+                            # create a new array in this slot
+                            chains[src_word] = [k]
+
+            min_dist = hammingdistance(src_word, dest_word)
+            for v in chains[src_word]:
+                #in each ladder of srcword we find the word closest to the dest word and then create its ladder and push it into the list
+                if hammingdistance(v, dest_word) < min_dist:
+                    min_dist = hammingdistance(v, dest_word)
+                    src_word = v
+
+            list_maker(src_word)#recursive calling for DFS search
+
+        else:
+           print 'lenght mismatch'
+           sys.exit()
+
+if src_word in jsondata.iterkeys():
+  if dest_word in jsondata.iterkeys():
+   list_maker(src_word)
+   list.append(dest_word)
+   print '->'.join(list)#prints the ladder....
+  else:
+    print 'destination word not in dictionary'
+
+else:
+    print 'source word not in dictionary'
